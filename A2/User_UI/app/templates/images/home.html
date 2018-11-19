@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ImageHome</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+/* Add padding to container elements */
+.container {
+    padding: 16px;
+}
+.login-wrap{
+	width:100%;
+	margin:auto;
+	max-width:1025px;
+	min-height:670px;
+	position:relative;
+	background: no-repeat center;
+	box-shadow:0 12px 15px 0 rgba(0,0,0,.24),0 17px 50px 0 rgba(0,0,0,.19);
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width:50%;
+}
+
+/* Add padding to container elements */
+.container {
+    padding: 16px;
+}
+ .img-cs{
+            height:15%;
+            margin-left:10px;
+            }
+
+.cancelbtn {
+    width: 10%;
+    padding: 10px 18px;
+    background-color: #f44336;
+
+}
+
+/* Change styles for span and cancel button on extra small screens */
+@media screen and (max-width: 300px) {
+
+    .cancelbtn {
+       width: 50%;
+    }
+}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+<div  class="container">
+    <center><h1>Welcome to Our User Home!</h1></center>
+
+    <form action='{{url_for("main")}}' method='get'>
+    <button type="submit" class="cancelbtn" >Log Out</button>
+    </form>
+
+    <hr>
+
+    <div class="container">
+        <div>
+            <h3>If you have uploaded some images, it will be shown below：</h3>
+        </div>
+
+        <br>
+
+        <div>
+
+            {% for url, filename in zipped_data %}
+
+            <a href="{{url_for('images_trans', filename=filename)}}" >
+
+                <img src="{{url}}" class="img-cs" >
+
+            </a>
+
+            {% endfor %}
+
+        </div>
+
+       <br><br>
+
+    <div><h3>You can also upload your images below:</h3></div>
+
+    <form action='{{url_for("s3_upload")}}' method='post' enctype='multipart/form-data' onsubmit="return validateForm()">
+        <input type='file' name='file' accept="image/*" multiple>
+        <input type="submit" value="Upload New File" />
+    </form>
+
+
+
+</div></div>
+</body>
+</html>
+
+
