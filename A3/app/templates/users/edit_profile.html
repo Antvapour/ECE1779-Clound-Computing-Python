@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HelloFriends</title>
+    <style>
+        a {
+  color: #3C96ED;
+  text-decoration: none;
+}
+
+body {
+  background: #fafafa;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+#wrapper {
+  height: 100vh;
+}
+
+#container {
+  margin: 0 auto;
+  min-height: 100%;
+  width: 600px;
+  display: flex;
+  align-items: center;
+}
+
+.column {
+  flex-grow: 1;
+  width: 50%;
+}
+
+.right {
+  padding-left: 50px;
+}
+
+.login-panel {
+  background: #fff;
+  border: 2px solid #e6e6e6;
+  text-align: center;
+  padding: 32px 0;
+  margin-top:-42px
+
+}
+
+.logo-img {
+  width: 195px;
+    height: 80px
+}
+
+
+
+.text-small {
+  font-size: 12px;
+  color: grey;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding-left: 20px;
+  display: inline-block;
+}
+
+.carousel {
+  position: relative;
+  top: 89px;
+  left: 116px;
+  height: 427px;
+  width: 240px;
+  border: 2px solid black;
+
+
+
+
+.forgot-password {
+  font-size: 14px;
+  margin-top: 12px;
+  line-height: 14px;
+  text-align: center;
+  color: #003569;
+  text-decoration: none;
+}
+
+
+
+.sign-up-a {
+  color: #3897f0;
+  text-decoration: none;
+}
+}
+
+.group .input{
+	width:70%;
+	color:#2d2d2d;
+	display:block;
+}
+.group .input{
+    display: flex;
+    margin: 0 60px 0px 65px;
+    align-items: center;
+	border:none;
+	padding:15px 20px;
+	border-radius:10px;
+	background:rgba(192,192,192,0.3);
+}
+
+
+
+.group .button{
+	width:77.8%;
+	color:#e5e5e5;
+	display:block;
+}
+
+.group .button{
+    display: flex;
+    margin: 0 50px 0px 65px;
+    align-items: center;
+	border:none;
+	padding:10px 190px;
+	border-radius:10px;
+	background:rgba(192,192,192,0.3);
+}
+
+
+
+.group input[data-type="password"]{
+	text-security:circle;
+	-webkit-text-security:circle;
+}
+
+.group .button{
+	background:#1161ee;
+}
+
+
+    </style>
+</head>
+<body>
+
+<div id="wrapper">
+  <div id="container">
+
+ <div class="column right">
+
+        <div class="login-panel">
+
+            <div class="logo">
+                <img class="logo-img" src="https://covchurch.org/children/wp-content/uploads/sites/18/2013/01/Hello-Friends-logo.png">
+            </div><br><br>
+
+            <div class="profile-image">
+                {% if not data['thumbnail'] %}
+				<img src="https://images.unsplash.com/photo-1513721032312-6a18a42c8763?w=152&h=152&fit=crop&crop=faces" alt="">
+                {% else %}
+                <img src="{{url_thumbnail}}" width="150px" height="125px">
+                {% endif %}
+			</div>
+
+			<div class="profile-user-settings">
+                <h1 class="profile-user-name">{{data['username']}}</h1>
+            </div>
+
+
+            <form action='{{url_for("edit_profile_save")}}' method='post'>
+
+                <div class="group">
+                    <p>Account Name:</p>
+                    {% if not data['account_name'] %}
+                        <input type='text' class="input" placeholder="New User" name='account_name'>
+                    {% else %}
+                        <input type='text' class="input" placeholder={{data['account_name']}} name='account_name'>
+                    {% endif %}
+				</div>
+
+				<div class="group">
+                    <p>Personal Profile:</p>
+                    {% if not data['personal_profile'] %}
+                        <input type='text' class="input" placeholder="New User" name='personal_profile'>
+                    {% else %}
+                        <input type='text' class="input" placeholder={{data['personal_profile']}} name='personal_profile'>
+                    {% endif %}
+
+
+				</div><br><br><br>
+
+				<div class="group">
+					<input type="submit" class="button" value="Save">
+				</div><br>
+
+            </form >
+
+               <form action='{{url_for("user_home")}}' method='get'>
+                    <div class="group">
+                    <input type="submit" class="button" value="Cancel">
+                    </div>
+			   </form>
+        </div>
+</div></div></div>
+
+
+</body>
+
+</html>
+

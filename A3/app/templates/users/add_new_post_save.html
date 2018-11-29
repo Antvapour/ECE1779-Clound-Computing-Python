@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale= 1.0" />
+	<title>HelloFriends</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+	<link rel="stylesheet" href="main.css" />
+    <style>
+        @import "reset";
+
+body {
+	background: #fafafa;
+}
+
+header {
+	background: #fafafa;
+	border-bottom: 1px solid #ccc;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index:20;
+}
+
+a {
+	box-sizing: border-box;
+	width: 24%;
+	display: inline-block;
+	margin-left: -3px;
+	text-align: center;
+	padding: 12px;
+}
+
+.fa  {
+	color: #111;
+	font-size: 25px;
+}
+
+.fa-heart-o:hover {
+	color: red;
+}
+
+.container {
+	background: #fafafa;
+	padding-top: 50px;
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 58px;
+	bottom: 0;
+	font-family: 'Open Sans', sans-serif;
+}
+
+.card {
+	background: #fff;
+	margin: 0 auto;
+	width: 600px;
+	height: 1000px;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
+
+.card-header {
+	padding: 15px;
+}
+
+.profile-img {
+	display: inline-block;
+	height: 45px;
+	width: 45px;
+	border-radius: 50%;
+	position: relative;
+	top: 5px;
+	margin-right: 5px;
+}
+
+
+.profile-info {
+	display: inline-block;
+}
+
+.name {
+	font-size: 14px;
+	color: #111;
+	font-weight: 700;
+}
+
+.location {
+	font-size: 12px;
+	color: #111;
+}
+
+.time {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 12px;
+	float: right;
+	display: inline-block;
+	position: relative;
+	top: 10px;
+	right: 5px;
+	color: grey;
+	font-weight: 700;
+}
+
+.content {
+	width: 100%;
+	height: 670px;
+}
+
+.likes {
+	font-weight: 700;
+}
+
+.card-footer {
+	box-sizing: border-box;
+	overflow: auto;
+}
+
+.footer-content {
+	font-family: 'Open Sans', sans-serif;
+	font-size: 14px;
+	padding: 0px 15px 0 15px;
+}
+
+span {
+	font-weight: 600;
+}
+
+.fa {
+	font-size: 24px;
+}
+.fa-heart-o {
+	display: inline-block;
+	width: 10%;
+}
+
+.add-comment {
+	display: inline-block;
+	width: 60%;
+}
+
+input {
+	font-family: 'Open Sans', sans-serif;
+	display: inline-block;
+	width: 100%;
+	padding: 5px;
+	font-size: 14px;
+}
+
+.fa-ellipsis-h {
+	display: inline-block;
+	width: 15%;
+	color: grey;
+	padding: 0 0 0 18px;
+}
+
+
+.group .input{
+
+	width:24%;
+	color:#2d2d2d;
+	display:block;
+}
+.group .input{
+    display: flex;
+    margin: 0 0px 0px 0px;
+    align-items: center;
+	border:none;
+	padding:15px 205px;
+	border-radius:10px;
+	background:rgba(192,192,192,0.3);
+}
+
+
+
+
+.group .button{
+	width:101%;
+	color:#e5e5e5;
+	display:block;
+}
+
+.group .button{
+    display: flex;
+    margin: 0 0px 0px 0px;
+    align-items: center;
+	border:none;
+	padding:5px 235px;
+	border-radius:10px;
+	background:rgba(192,192,192,0.3);
+}
+
+
+
+.group input[data-type="password"]{
+	text-security:circle;
+	-webkit-text-security:circle;
+}
+
+.group .button{
+	background:#1161ee;
+}
+
+
+    </style>
+</head>
+
+<body onload="show()">
+	<header>
+		<a href="{{url_for('user_home')}}"><i class="fa fa-home" aria-hidden="true"></i></a>
+		<a href="search.html"><i class="fa fa-search" aria-hidden="true"></i></a>
+		<a href="likes.html"><i class="fa fa-heart-o" aria-hidden="true"></i></a>
+		<a href="{{url_for('show_personal_information')}}"><i class="fa fa-user-o" aria-hidden="true"></i></a>
+	</header>
+
+	<section class="container">
+		<div class="card">
+		<div class="card-header">
+		<div class="profile-img">
+            {% if not data['thumbnail'] %}
+				<img class="profile-img" src="https://images.unsplash.com/photo-1513721032312-6a18a42c8763?w=152&h=152&fit=crop&crop=faces" alt="">
+            {% else %}
+                <img class="profile-img" src="{{url_thumbnail}}" width="150px" height="125px">
+            {% endif %}
+		</div>
+		<div class="profile-info">
+			<div class="name">{{data['username']}}</div>
+		</div>
+		<div class="time">
+			<br>
+			 <div id="nowDiv"></div>
+		</div><br><br>
+
+		<div class="content">
+			{% if file_type_revised == 'image' %}
+				<img src="{{url_post}}" class="content" />
+			{% elif file_type_revised == 'video' %}
+				<video class="content" controls autoplay>
+					<source src="{{url_post}}" type="video/mp4"  />
+				</video>
+			{% else %}
+				<img src="{{url_post}}" class="content" />
+			{% endif %}
+		</div>
+
+		<div class="card-footer">
+			<div class="footer-content">
+                <form action='{{url_for("add_new_post_double_save")}}' method='post'>
+
+                    <p>
+					<span>Post Content
+					&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+                    &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+                    &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp
+                        &thinsp;&thinsp;&thinsp;&thinsp;&thinsp;&thinsp;&thinsp;
+
+					<select name="who_can_see">
+                        <option value="public">Public</option><option value="onlyme">Only Me</option>
+                    </select>
+                    <br><br>
+					</span>
+				    </p>
+
+                    <div class="group">
+                        <input type='text' class="input" placeholder="Add Post Content" name='post_content'>
+                    <br><br>
+					    <input type="submit" class="button" value="Post">
+                    </div><br>
+
+                </form>
+
+                <form action='{{url_for("user_home")}}' method='get'>
+                    <div class="group">
+                    <input type="submit" class="button" value="Cancel">
+                    </div>
+			   </form>
+
+
+			</div>
+		</div>
+	</div>
+        </div>
+	</section>
+
+<script>
+function show(){
+var date = new Date();
+var now = "";
+now = date.getFullYear()+"/";
+now = now + (date.getMonth()+1)+"/"; //
+now = now + date.getDate()+"/ ";
+now = now + date.getHours()+":";
+now = now + date.getMinutes()+"'";
+document.getElementById("nowDiv").innerHTML = now; //
+setTimeout("show()",1000); //
+}
+</script>
+
+</body>
+
+
+</html>
+
