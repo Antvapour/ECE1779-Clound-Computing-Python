@@ -52,10 +52,8 @@ body {
 
 .logo-img {
   width: 195px;
-<<<<<<< HEAD
-=======
-height: 80px
->>>>>>> d6f02a14b96f913f2d2481a1b68d6abb080ea8e7
+   height: 80px
+
 }
 
 
@@ -147,15 +145,16 @@ height: 80px
 <body>
 
 <div id="wrapper">
+  <div id="container">
 
-    <div id="container">
-
-    <div class="column right">
+ <div class="column right">
 
         <div class="login-panel">
 
             <div class="logo">
-                <img class="logo-img" src="https://covchurch.org/children/wp-content/uploads/sites/18/2013/01/Hello-Friends-logo.png"> </div><br>
+                <img class="logo-img" src="https://covchurch.org/children/wp-content/uploads/sites/18/2013/01/Hello-Friends-logo.png">
+                <br><br>
+            </div>
 
             <div class="profile-image">
                 {% if not data['thumbnail'] %}
@@ -170,38 +169,25 @@ height: 80px
             </div>
 
             <div>
-                <p>Email Address: {{data['email_address']}}</p>
+                {% for following in following_users %}
+                    <img src="{{following[1]}}" width="50px" height="50px">
+					<a class="name" href="{{url_for('posts_of_specific_user_hyperlink',username=following[0])}}">{{following[0]}}</a>
+                {% endfor %}
             </div>
 
-            <div>
-                {% if not data['account_name'] %}
-                    <p>Account Name: 📷️ </p>
-                {% else %}
-                    <p>Account Name: 📷️ {{data['account_name']}}</p>
-                {% endif %}
-            </div>
-
-            <div>
-                {% if not data['personal_profile'] %}
-                    <p>Persobal Profile: New User </p>
-                {% else %}
-                    <p>Persobal Profile: {{data['personal_profile']}}</p>
-                {% endif %}
-            </div>
-
-				<br><br><br>
+            <br>
 
             <form action='{{url_for("user_home")}}' method='get'>
-                <div class="group">
+                    <div class="group">
                     <input type="submit" class="button" value="Back">
-                </div>
-            </form>
+                    </div>
+			   </form>
 
         </div>
-
 </div></div></div>
 
 
 </body>
+
 </html>
 

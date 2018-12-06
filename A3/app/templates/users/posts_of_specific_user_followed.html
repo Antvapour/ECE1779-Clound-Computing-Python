@@ -32,15 +32,7 @@ a {
 	text-align: center;
 	padding: 12px;
 	text-decoration: none;
-}
-
-form {
-	box-sizing: border-box;
-	width: 30%;
-	display: inline-block;
-	margin-left: -3px;
-	text-align: center;
-	padding: 12px;
+	color:#181407;
 }
 
 .fa  {
@@ -212,6 +204,15 @@ input {
 	background:#1161ee;
 }
 
+form {
+	box-sizing: border-box;
+	width: 30%;
+	display: inline-block;
+	margin-left: -3px;
+	text-align: center;
+	padding: 12px;
+}
+
 
     </style>
 </head>
@@ -220,13 +221,16 @@ input {
 	<header>
 		<a href="{{url_for('user_home')}}"><i class="fa fa-home" aria-hidden="true"></i></a>
         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
-        &nbsp; &nbsp;
-        <i class="fa fa-search" aria-hidden="true"></i>
+        &nbsp; &nbsp;&nbsp; &nbsp;
 
-		<form action="{{url_for('posts_of_specific_user')}}" method="post">
-		    <input type='text' class="input" placeholder="Search User" name='query_username'>
-		</form>
-        &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+     <a href="{{url_for('unfollow')}}" ><i class="fa fa-search" aria-hidden="true"></i>
+            &nbsp; &nbsp;{{data['username']}}&nbsp;&nbsp;✅Followed &nbsp;<br>&nbsp;&nbsp;☹️Don't Want to follow?</a>
+
+        &nbsp; &nbsp;  &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;
+        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+
 
 		<a href="{{url_for('show_personal_information')}}"><i class="fa fa-user-o" aria-hidden="true"></i></a>
 
@@ -248,7 +252,7 @@ input {
 		        </div>
 
                 <div class="profile-info">
-					<a class="name" href="{{url_for('posts_of_specific_user_hyperlink',username=i[1])}}">{{i[1]}}</a>
+			        <div class="name">{{i[1]}}</div>
 		        </div>
 
                 <div class="time">
@@ -282,4 +286,3 @@ input {
 </body>
 
 </html>
-

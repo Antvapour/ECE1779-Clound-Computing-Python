@@ -213,12 +213,13 @@ def user_home():
     if 'authenticated' not in session:
         return redirect(url_for('login'))
 
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
 
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
 
@@ -228,9 +229,7 @@ def user_home():
         item = response['Item']
         data.update(item)
 
-    print(data)
-
-    file_key_name = str(users_name) + '/' + 'thumbnail'
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
     s3 = boto3.client('s3')
 
     url_thumbnail = s3.generate_presigned_url(
@@ -256,7 +255,7 @@ def user_home():
 
             url = s3.generate_presigned_url(
                 'get_object',
-                Params={'Bucket': 'imagesece1779', 'Key': str(users_name) + '/' + file_1})
+                Params={'Bucket': 'imagesece1779', 'Key': str(account_user_name) + '/' + file_1})
             url_total.append(url)
 
     zipped_data = zip(url_total, file_name, file_type)

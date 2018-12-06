@@ -31,6 +31,8 @@ a {
 	margin-left: -3px;
 	text-align: center;
 	padding: 12px;
+	text-decoration: none;
+	color:#181407;
 }
 
 .fa  {
@@ -219,13 +221,15 @@ form {
 	<header>
 		<a href="{{url_for('user_home')}}"><i class="fa fa-home" aria-hidden="true"></i></a>
         &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
-        &nbsp; &nbsp;
-        <i class="fa fa-search" aria-hidden="true"></i>
+        &nbsp; &nbsp;&nbsp; &nbsp;
 
-		<form action="{{url_for('posts_of_specific_user')}}" method="post">
-		    <input type='text' class="input" placeholder="Search User" name='query_username'>
-		</form>
-        &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;
+
+&nbsp;&nbsp; &nbsp;
+        <a href="{{url_for('follow')}}" ><i class="fa fa-search" aria-hidden="true"></i>
+            &nbsp; &nbsp;{{data['username']}}&nbsp;&nbsp;☹️Unfollow &nbsp;<br>✅ Want to follow?</a>
+
+        &nbsp; &nbsp;  &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;
+        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
 
 		<a href="{{url_for('show_personal_information')}}"><i class="fa fa-user-o" aria-hidden="true"></i></a>
 

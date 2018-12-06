@@ -21,6 +21,7 @@ body {
     background-color: #fafafa;
     color: #262626;
     padding-bottom: 3rem;
+
 }
 
 img {
@@ -138,6 +139,7 @@ img {
 .profile-stat-count,
 .profile-edit-btn {
     font-weight: 600;
+    text-decoration: none;
 }
 
 /* Gallery Section */
@@ -413,24 +415,44 @@ Remove or comment-out the code block below to see how the browser will fall-back
 
 			<div class="profile-bio">
                 {% if not data['account_name'] and not data['personal_profile'] %}
-				<p><span class="profile-real-name">📷️</span> New User
-                    &nbsp &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
-                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a></p>
+				<p>
+                    <span class="profile-real-name">📷️</span> New User
+                </p>
+                <p>
+                    <a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
+                </p>
 
                 {% elif data['account_name'] and not data['personal_profile'] %}
-                <p><span class="profile-real-name">📷️{{data['account_name']}}</span> New User
-                    &nbsp &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
-                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a></p>
+                <p>
+                    <span class="profile-real-name">📷️{{data['account_name']}}</span> New User
+                </p>
+                    <p><a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
+                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️️FOLLOWING</a>
+                </p>
 
                 {% elif not data['account_name'] and data['personal_profile'] %}
-                <p><span class="profile-real-name">📷️</span> {{data['personal_profile']}}
-                  &nbsp &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
-                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a></p>
+                <p>
+                    <span class="profile-real-name">📷️</span> {{data['personal_profile']}}
+                </p>
+                <p>
+                    <a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
+                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️️FOLLOWING</a>
+                </p>
 
                 {% else %}
-               <p><span class="profile-real-name">📷️{{data['account_name']}}:</span> {{data['personal_profile']}}
-                  &nbsp &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
-               &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a></p>
+               <p>
+                   <span class="profile-real-name">📷️{{data['account_name']}}:</span> {{data['personal_profile']}}
+               </p>
+               <p>
+                   <a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+               &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
+                   &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
+
+               </p>
 
                 {% endif %}
 

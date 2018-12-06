@@ -2,6 +2,7 @@ from __future__ import print_function # Python 2/3 compatibility
 from flask import render_template, session, redirect, url_for, request, g, send_from_directory
 from app import webapp
 import datetime
+import time
 from operator import itemgetter
 
 
@@ -13,7 +14,6 @@ import boto3
 
 
 # connect to dynamodb
-
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 webapp.secret_key = '\x80\xa9s*\x12\xc7x\xa9d\x1f(\x03\xbeHJ:\x9f\xf0!\xb1a\xaa\x0f\xee'
 
@@ -24,12 +24,14 @@ AUTH_SIZE = 16
 @webapp.route('/personal_information', methods=['GET'])
 # show user's personal information
 def show_personal_information():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
 
+    # get information of this user account
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
 
@@ -39,24 +41,27 @@ def show_personal_information():
         item = response['Item']
         data.update(item)
 
-    file_key_name = str(users_name) + '/' + 'thumbnail'
+    # get thumbnail url of this user account in aws s3
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
     s3 = boto3.client('s3')
-    url_thumbnail = s3.generate_presigned_url(
+    url_thumbnail_account = s3.generate_presigned_url(
         'get_object',
         Params={'Bucket': 'imagesece1779', 'Key': file_key_name})
 
-    return render_template("users/show_personal_information.html", data=data, url_thumbnail=url_thumbnail)
+    return render_template("users/show_personal_information.html", data=data, url_thumbnail_account=url_thumbnail_account)
 
 
 @webapp.route('/edit_profile', methods=['GET'])
-# edit user's personal information
+# edit user's personal profile
 def edit_profile():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
 
+    # get information of this account in the aws db
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
 
@@ -66,48 +71,46 @@ def edit_profile():
         item = response['Item']
         data.update(item)
 
-    file_key_name = str(users_name) + '/' + 'thumbnail'
+    # get thumbnail url of this user account in aws s3
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
     s3 = boto3.client('s3')
-    url_thumbnail = s3.generate_presigned_url(
+    url_thumbnail_account = s3.generate_presigned_url(
         'get_object',
         Params={'Bucket': 'imagesece1779', 'Key': file_key_name})
 
-    return render_template("users/edit_profile.html", data=data, url_thumbnail=url_thumbnail)
+    return render_template("users/edit_profile.html", data=data, url_thumbnail_account=url_thumbnail_account)
 
 
 @webapp.route('/edit_profile', methods=['POST'])
-# edit user's personal information
+# edit user's personal information and save
 def edit_profile_save():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
 
     # acquire the information of personal profile
     personal_profile = request.form.get('personal_profile', "")
-    print(personal_profile)
+    account_name = request.form.get('account_name', "")
 
+    # save the info in db
     if personal_profile != "":
         # store information into the database
         table = dynamodb.Table('a3_ece1779')
         response = table.update_item(
             Key={
-                'username': users_name
+                'username': account_user_name
             },
             UpdateExpression="SET personal_profile = :p",
             ExpressionAttributeValues={
                 ':p': personal_profile
             }
-
         )
-
-    # acquire the information of personal profile
-    account_name = request.form.get('account_name', "")
-    print(account_name)
 
     if account_name != "":
         # store information into the database
         table = dynamodb.Table('a3_ece1779')
         response = table.update_item(
             Key={
-                'username': users_name
+                'username': account_user_name
             },
             UpdateExpression="SET account_name = :n",
             ExpressionAttributeValues={
@@ -122,11 +125,14 @@ def edit_profile_save():
 @webapp.route('/edit_thumbnail', methods=['GET'])
 # edit user's thumbnail
 def edit_thumbnail():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
+
+    # get information of this account in the aws db
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
 
@@ -136,34 +142,37 @@ def edit_thumbnail():
         item = response['Item']
         data.update(item)
 
-    file_key_name = str(users_name) + '/' + 'thumbnail'
+    # get thumbnail url of this user account in aws s3
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
     s3 = boto3.client('s3')
-    url_thumbnail = s3.generate_presigned_url(
+    url_thumbnail_account = s3.generate_presigned_url(
         'get_object',
         Params={'Bucket': 'imagesece1779', 'Key': file_key_name})
 
-    return render_template("users/edit_thumbnail.html", data=data, url_thumbnail=url_thumbnail)
+    return render_template("users/edit_thumbnail.html", data=data, url_thumbnail_account=url_thumbnail_account)
 
 
 @webapp.route('/edit_thumbnail', methods=['POST'])
-# edit user's thumbnail
+# edit user's thumbnail and save in s3 and db
 def edit_thumbnail_save():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
 
+    # get info of the new uploaded account thumbnail
     for thumbnail in request.files.getlist("file"):
         if thumbnail.filename == '':
             return redirect(url_for('edit_thumbnail'))
 
-        # Get the service client and upload to the s3 bucket
+        # upload to the s3 bucket
         s3 = boto3.client('s3')
-        file_key_name = str(users_name) + '/' + 'thumbnail'
+        file_key_name = str(account_user_name) + '/' + 'thumbnail'
         s3.upload_fileobj(thumbnail, 'imagesece1779', file_key_name, ExtraArgs={"ContentType": "image/jpeg"})
 
+        # update account thumbnail info in the db
         table = dynamodb.Table('a3_ece1779')
-
         response = table.update_item(
             Key={
-                'username': users_name
+                'username': account_user_name
             },
             UpdateExpression="SET thumbnail = :p",
             ExpressionAttributeValues={
@@ -177,11 +186,14 @@ def edit_thumbnail_save():
 @webapp.route('/add_new_post', methods=['GET'])
 # add new post
 def add_new_post():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
+
+    # get information of this account in the aws db
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
 
@@ -191,62 +203,67 @@ def add_new_post():
         item = response['Item']
         data.update(item)
 
-    file_key_name = str(users_name) + '/' + 'thumbnail'
+    # get thumbnail url of this user account in aws s3
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
     s3 = boto3.client('s3')
-    url_thumbnail = s3.generate_presigned_url(
+    url_thumbnail_account = s3.generate_presigned_url(
         'get_object',
         Params={'Bucket': 'imagesece1779', 'Key': file_key_name})
 
-    return render_template("users/add_new_post.html", data=data, url_thumbnail=url_thumbnail)
+    return render_template("users/add_new_post.html", data=data, url_thumbnail_account=url_thumbnail_account)
 
 
 @webapp.route('/add_new_post', methods=['POST'])
 # save added new post
 def add_new_post_save():
+    # get the account username
+    account_user_name = session.get('username')
 
-    users_name = session.get('username')
-    data = {}
-    url_thumbnail = []
     url_post = []
     file_type_revised = []
 
+    # get information of this account in the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': account_user_name
+        }
+    )
+    data = {}
+    if 'Item' in response:
+        item = response['Item']
+        data.update(item)
+
+    # get thumbnail url of this user account in aws s3
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
+    s3 = boto3.client('s3')
+    url_thumbnail_account = s3.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+    )
+
+    # upload post image
+
+    # if no upload image, return to add_new_post html and show error message
     if not request.files.getlist("file"):
+        return render_template("users/add_new_post.html", data=data, url_thumbnail_account=url_thumbnail_account,
+                               error_msg='No file!')
 
-        users_name = session.get('username')
-        table = dynamodb.Table('a3_ece1779')
-        response = table.get_item(
-            Key={
-                'username': users_name
-            }
-        )
-
-        data = {}
-
-        if 'Item' in response:
-            item = response['Item']
-            data.update(item)
-
-        file_key_name = str(users_name) + '/' + 'thumbnail'
-        s3 = boto3.client('s3')
-        url_thumbnail = s3.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': 'imagesece1779', 'Key': file_key_name})
-
-        return render_template("users/add_new_post.html", data=data, url_thumbnail=url_thumbnail, error_msg='No file!')
-
+    # upload image of the new post
     else:
         for new_post in request.files.getlist("file"):
 
+            # acquire the image name
             filename_full = new_post.filename
-
-            file_type = new_post.mimetype
-
-            file_type_revised = file_type[0:file_type.rfind('/', 1)]
             index = filename_full.rfind('.')
-            filename = filename_full[:index]
+            post_image_name = filename_full[:index]
 
-            file_post_name = filename
-            file_saved = str(users_name) + '/' + file_post_name
+            # file's saved name in the db and s3
+            file_saved = str(account_user_name) + '/' + post_image_name
+
+            # acquire the  file type
+            file_type = new_post.mimetype
+            file_type_revised = file_type[0:file_type.rfind('/', 1)]
 
             # Get the service client and upload to the s3 bucket
             s3 = boto3.client('s3')
@@ -257,78 +274,61 @@ def add_new_post_save():
             else:
                 s3.upload_fileobj(new_post, 'imagesece1779', file_saved, ExtraArgs={"ContentType": "image/jpeg"})
 
+            # save the file_post_name and file_type in the session
             session['authenticated'] = True
-            session['file_post_name'] = file_post_name
-            session['type'] = file_type_revised
+            session['post_image_name'] = post_image_name
+            session['post_image_type'] = file_type_revised
 
+            # get post image url in aws s3
             s3 = boto3.client('s3')
             url_post = s3.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': 'imagesece1779', 'Key': file_saved})
 
-            table = dynamodb.Table('a3_ece1779')
-            response = table.get_item(
-                Key={
-                        'username': users_name
-                }
-            )
-
-            if 'Item' in response:
-                item = response['Item']
-                data.update(item)
-
-            file_key_name = str(users_name) + '/' + 'thumbnail'
-            s3 = boto3.client('s3')
-            url_thumbnail = s3.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
-                )
-
         return render_template("users/add_new_post_save.html", data=data, file_type_revised=file_type_revised,
-                               url_thumbnail=url_thumbnail, url_post=url_post)
+                               url_thumbnail_account=url_thumbnail_account, url_post=url_post)
 
 
 @webapp.route('/add_new_post_save', methods=['POST'])
 # save added new post
 def add_new_post_double_save():
-    # store information into the database
-    users_name = session.get('username')
-    file_post_name = session.get('file_post_name')
-    type = session.get('type')
+    # get the account username,post_image_name,post_image_type
+    account_user_name = session.get('username')
+    post_image_name = session.get('post_image_name')
+    post_image_type = session.get('post_image_type')
 
+    # get post content and who_can_see from form
     post_content = request.form.get('post_content', "")
     who_can_see = request.form.get('who_can_see', "")
 
     if who_can_see == '':
         who_can_see = 'public'
 
-
     # update info into file_content of database
-
     table = dynamodb.Table('a3_ece1779')
     response = table.update_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         },
         UpdateExpression="ADD file_content :file_content",
         ExpressionAttributeValues={
-            ":file_content": set([file_post_name+'.'+type])
+            ":file_content": set([post_image_name+'.'+post_image_type])
         }
     )
 
+    # get time
     now = datetime.datetime.now()
-    time = now.strftime("%Y-%m-%d %H:%M:%S")
+    post_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
     # update info into post_content of database
-
     table = dynamodb.Table('a3_ece1779')
     response = table.update_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         },
         UpdateExpression="ADD post_content :post_content",
         ExpressionAttributeValues={
-            ":post_content": set([time+','+file_post_name+'.'+type + ':' + post_content + '&' + who_can_see])
+            ":post_content": set([post_time+','+post_image_name+'.'+post_image_type + ':' + post_content + '&' + who_can_see])
         }
     )
 
@@ -341,11 +341,14 @@ def post_detail(post_name, post_type):
     if 'authenticated' not in session:
         return redirect(url_for('main'))
 
+    # get the account username
+    account_user_name = session.get('username')
+
+    # get information of this account in the aws db
     table = dynamodb.Table('a3_ece1779')
-    users_name = session.get('username')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
 
@@ -354,41 +357,45 @@ def post_detail(post_name, post_type):
         item = response['Item']
         data.update(item)
 
+    # get thumbnail url of this user account in aws s3
     s3 = boto3.client('s3')
-    file_key_name = str(users_name) + '/' + 'thumbnail'
-    url_thumb = s3.generate_presigned_url(
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
+    url_thumbnail_account = s3.generate_presigned_url(
         'get_object',
         Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
     )
+
+    # get post image url in aws s3
     url_post = s3.generate_presigned_url(
         'get_object',
-        Params={'Bucket': 'imagesece1779', 'Key': str(users_name) + '/' + post_name}
+        Params={'Bucket': 'imagesece1779', 'Key': str(account_user_name) + '/' + post_name}
     )
 
     post_time = []
     post_info = []
 
     if 'post_content' in data:
-        post = data['post_content']
-
-        for i in post:
+        for i in data['post_content']:
             if post_name in i:
                 post_info = i[i.rfind(':', 1)+1:i.rfind('&', 1)]
                 post_time = i[0:i.rfind(',', 1)]
 
-    return render_template("users/post_detail.html", data=data, url_post=url_post, url_thumb=url_thumb, post_info=post_info,
+    return render_template("users/post_detail.html", data=data, url_post=url_post,
+                           url_thumbnail_account=url_thumbnail_account, post_info=post_info,
                            post_time=post_time, post_type=post_type)
 
 
 @webapp.route('/my_moments', methods=["GET", "POST"])
 # display all posts of the user
 def my_moments():
-    users_name = session.get('username')
+    # get the account username
+    account_user_name = session.get('username')
 
+    # get information of this account in the aws db
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
-            'username': users_name
+            'username': account_user_name
         }
     )
     data = {}
@@ -396,111 +403,115 @@ def my_moments():
         item = response['Item']
         data.update(item)
 
-    post_info = []
-    post_time = []
-    post_name = []
-    post_type = []
-    url_post = []
+    # get thumbnail url of this user account in aws s3
+    s3 = boto3.client('s3')
+    # get the thumbnail
+    file_key_name = str(account_user_name) + '/' + 'thumbnail'
+    url_thumbnail_account = s3.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+    )
 
+    # get post content of all posts of this user account
     data_all = []
 
     if 'post_content' in data:
-        posts = data['post_content']
 
-        for post in posts:
+        for post in data['post_content']:
 
             post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
             post_time = post[0:post.rfind(',', 1)]
             post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
             post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
 
-            # get the url of all posts
+            # get the url of post
             s3 = boto3.client('s3')
             url_post = s3.generate_presigned_url(
                 'get_object',
-                Params={'Bucket': 'imagesece1779', 'Key': str(users_name) + '/' + post_name}
+                Params={'Bucket': 'imagesece1779', 'Key': str(account_user_name) + '/' + post_name}
             )
 
             data_all.append([post_time, post_info, post_name, post_type, url_post])
 
     data_sorted = sorted(data_all, key=itemgetter(0), reverse=True)
 
-    s3 = boto3.client('s3')
-    # get the thumbnail
-    file_key_name = str(users_name) + '/' + 'thumbnail'
-    url_thumb = s3.generate_presigned_url(
-        'get_object',
-        Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
-    )
-
-    return render_template("users/my_moments.html", data=data, url_thumb=url_thumb, data_sorted=data_sorted)
+    return render_template("users/my_moments.html", data=data, url_thumbnail_account=url_thumbnail_account,
+                           data_sorted=data_sorted)
 
 
 @webapp.route('/friends_moments', methods=["GET", "POST"])
 # display all posts of the user
 def friends_moments():
+    # get the account username
+    account_user_name = session.get('username')
+
+    # get information of this account in the aws db
     table = dynamodb.Table('a3_ece1779')
-    response = table.scan(
-        ProjectionExpression="username"
-
+    response = table.get_item(
+        Key={
+            'username': account_user_name
+        }
     )
-    records = []
 
-    for i in response['Items']:
-        records.append(i)
+    data = {}
+    if 'Item' in response:
+        item = response['Item']
+        data.update(item)
 
-    # get all usernames in the database
-
+    # get following usernames in the database
     posts_users = []
-    for user in records:
-        username = user['username']
 
-        table = dynamodb.Table('a3_ece1779')
-        response = table.get_item(
-            Key={
-               'username': username
-            }
-        )
-        data = {}
-        url_thumb = []
+    if 'following' in data:
+        following_name = data['following']
 
-        if 'Item' in response:
-            item = response['Item']
-            data.update(item)
+        for name in following_name:
 
-        if 'thumbnail' in data:
-            # get thumbnail url of a specific user
-            s3 = boto3.client('s3')
-            # get the thumbnail
-            file_key_name = str(username) + '/' + 'thumbnail'
-            url_thumb = s3.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+            # get information of this account in the aws db
+            table = dynamodb.Table('a3_ece1779')
+            response = table.get_item(
+                Key={
+                    'username': name
+                }
             )
 
-        if 'post_content' in data:
-            posts = data['post_content']
+            follow_name_data = {}
+            url_thumb = []
 
-            for post in posts:
+            if 'Item' in response:
+                item = response['Item']
+                follow_name_data.update(item)
 
-                post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
-                post_time = post[0:post.rfind(',', 1)]
-                post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
-                post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
-                post_who_can_see = post[post.rfind('&', 1) + 1:]
+            if 'thumbnail' in follow_name_data:
+                # get thumbnail url of a specific user
+                s3 = boto3.client('s3')
+                # get the thumbnail
+                file_key_name = str(name) + '/' + 'thumbnail'
+                url_thumb = s3.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+                )
 
-                if post_who_can_see == 'onlyme':
-                    continue
+            if 'post_content' in follow_name_data:
+                for post in follow_name_data['post_content']:
 
-                else:
-                    # get the url of all posts
-                    s3 = boto3.client('s3')
-                    url_post = s3.generate_presigned_url(
-                        'get_object',
-                        Params={'Bucket': 'imagesece1779', 'Key': str(username) + '/' + post_name}
-                    )
+                    post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
+                    post_time = post[0:post.rfind(',', 1)]
+                    post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
+                    post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
+                    post_who_can_see = post[post.rfind('&', 1) + 1:]
 
-                    posts_users.append([post_time, username, post_info, post_name, post_type, url_post, url_thumb])
+                    if post_who_can_see == 'onlyme':
+                        continue
+
+                    else:
+                        # get the url of all posts of this following user
+                        s3 = boto3.client('s3')
+                        url_post = s3.generate_presigned_url(
+                            'get_object',
+                            Params={'Bucket': 'imagesece1779', 'Key': str(name) + '/' + post_name}
+                        )
+
+                        posts_users.append([post_time, name, post_info, post_name, post_type, url_post, url_thumb])
 
     posts_sorted = sorted(posts_users, key=itemgetter(0), reverse=True)
 
@@ -510,8 +521,35 @@ def friends_moments():
 @webapp.route('/posts_of_specific_user', methods=['POST'])
 # query a specific user and see their posts
 def posts_of_specific_user():
-    query_username = request.form.get('query_username', "")
+    # get the account username from session
+    account_user_name = session.get('username')
 
+    # get the query username  and save in session
+    query_username = request.form.get('query_username', "")
+    session['authenticated'] = True
+    session['query_username'] = query_username
+
+    # get information of this account in the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': account_user_name
+        }
+    )
+
+    info = {}
+    if 'Item' in response:
+        item = response['Item']
+        info.update(item)
+
+    # get following-state from this account info
+    follow_sate = 0
+
+    if 'following' in info:
+        if query_username in info['following']:
+            follow_sate = 1
+
+    # get information of this query user account in the aws db
     table = dynamodb.Table('a3_ece1779')
     response = table.get_item(
         Key={
@@ -564,5 +602,301 @@ def posts_of_specific_user():
 
     posts_sorted = sorted(posts_query_users, key=itemgetter(0), reverse=True)
 
-    return render_template("users/posts_of_specific_user.html", posts_sorted=posts_sorted)
+    if follow_sate == 0:
+        return render_template("users/posts_of_specific_user.html", posts_sorted=posts_sorted, data=data)
+    else:
+        return render_template("users/posts_of_specific_user_followed.html", posts_sorted=posts_sorted, data=data)
+
+
+@webapp.route('/posts_of_specific_user_hyperlink/<username>', methods=['POST', 'GET'])
+# query a specific user and see their posts
+def posts_of_specific_user_hyperlink(username):
+    # get the account username from session
+    account_user_name = session.get('username')
+
+    # get information of this account in the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': account_user_name
+        }
+    )
+
+    info = {}
+    if 'Item' in response:
+        item = response['Item']
+        info.update(item)
+
+    # get following-state from this account info
+    follow_sate = 0
+
+    if 'following' in info:
+        if username in info['following']:
+            follow_sate = 1
+    # get information of this query user account in the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': username
+        }
+    )
+
+    data = {}
+    url_thumb = []
+    posts_query_users = []
+
+    if 'Item' in response:
+        item = response['Item']
+        data.update(item)
+
+        if 'thumbnail' in data:
+            # get thumbnail url of a specific user
+            s3 = boto3.client('s3')
+            # get the thumbnail
+            file_key_name = str(username) + '/' + 'thumbnail'
+            url_thumb = s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+            )
+
+        if 'post_content' in data:
+
+            for post in data['post_content']:
+
+                post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
+                post_time = post[0:post.rfind(',', 1)]
+                post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
+                post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
+                post_who_can_see = post[post.rfind('&', 1) + 1:]
+
+                if post_who_can_see == 'onlyme':
+                    continue
+
+                else:
+                    # get the url of all posts
+                    s3 = boto3.client('s3')
+                    url_post = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': 'imagesece1779', 'Key': str(username) + '/' + post_name}
+                    )
+
+                    posts_query_users.append([post_time, username, post_info, post_name, post_type, url_post,
+                                              url_thumb])
+
+    posts_sorted = sorted(posts_query_users, key=itemgetter(0), reverse=True)
+
+    if follow_sate == 0:
+        return render_template("users/posts_of_specific_user.html", posts_sorted=posts_sorted, data=data)
+    else:
+        return render_template("users/posts_of_specific_user_followed.html", posts_sorted=posts_sorted, data=data)
+
+
+@webapp.route('/follow', methods=['POST', 'GET'])
+# follow a specific user
+def follow():
+    # get the account username and query_username from session
+    account_user_name = session.get('username')
+    follow_name = session.get('query_username')
+
+    # add the new following name in db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.update_item(
+        Key={
+            'username': account_user_name
+        },
+        UpdateExpression="ADD following :following",
+        ExpressionAttributeValues={
+            ":following": set([follow_name])
+        }
+    )
+
+    # get information of this new following user account in the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': follow_name
+        }
+    )
+
+    data = {}
+    url_thumb = []
+    posts_query_users = []
+
+    if 'Item' in response:
+        item = response['Item']
+        data.update(item)
+
+        if 'thumbnail' in data:
+            # get thumbnail url of a specific user
+            s3 = boto3.client('s3')
+            # get the thumbnail
+            file_key_name = str(follow_name) + '/' + 'thumbnail'
+            url_thumb = s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+            )
+
+        if 'post_content' in data:
+            posts = data['post_content']
+
+            for post in posts:
+
+                post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
+                post_time = post[0:post.rfind(',', 1)]
+                post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
+                post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
+                post_who_can_see = post[post.rfind('&', 1) + 1:]
+
+                if post_who_can_see == 'onlyme':
+                    continue
+
+                else:
+                    # get the url of all posts
+                    s3 = boto3.client('s3')
+                    url_post = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': 'imagesece1779', 'Key': str(follow_name) + '/' + post_name}
+                    )
+
+                    posts_query_users.append([post_time, follow_name, post_info, post_name, post_type, url_post,
+                                              url_thumb])
+
+    posts_sorted = sorted(posts_query_users, key=itemgetter(0), reverse=True)
+
+    return render_template("users/posts_of_specific_user_followed.html", posts_sorted=posts_sorted, data=data)
+
+@webapp.route('/unfollow', methods=['POST', 'GET'])
+# unfollow a specific user
+def unfollow():
+    # get the account username and query_username from session
+    account_user_name = session.get('username')
+    follow_name = session.get('query_username')
+
+    # delete this username in the 'following' of the account
+    table = dynamodb.Table('a3_ece1779')
+    response = table.update_item(
+        Key={
+            'username': account_user_name
+        },
+        UpdateExpression="DELETE following :following",
+        ExpressionAttributeValues={
+            ":following": set([follow_name])
+        }
+    )
+
+    # get information of this query user account in the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': follow_name
+        }
+    )
+
+    data = {}
+    url_thumb = []
+    posts_query_users = []
+
+    if 'Item' in response:
+        item = response['Item']
+        data.update(item)
+
+        if 'thumbnail' in data:
+            # get thumbnail url of a specific user
+            s3 = boto3.client('s3')
+            # get the thumbnail
+            file_key_name = str(follow_name) + '/' + 'thumbnail'
+            url_thumb = s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+            )
+
+        if 'post_content' in data:
+
+            for post in data['post_content']:
+
+                post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
+                post_time = post[0:post.rfind(',', 1)]
+                post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
+                post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
+                post_who_can_see = post[post.rfind('&', 1) + 1:]
+
+                if post_who_can_see == 'onlyme':
+                    continue
+
+                else:
+                    # get the url of all posts
+                    s3 = boto3.client('s3')
+                    url_post = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': 'imagesece1779', 'Key': str(follow_name) + '/' + post_name}
+                    )
+
+                    posts_query_users.append([post_time, follow_name, post_info, post_name, post_type, url_post,
+                                              url_thumb])
+
+    posts_sorted = sorted(posts_query_users, key=itemgetter(0), reverse=True)
+
+    return render_template("users/posts_of_specific_user.html", posts_sorted=posts_sorted, data=data)
+
+
+
+@webapp.route('/following_list', methods=['POST', 'GET'])
+# show the following list
+def following_list():
+    # get the account username from session
+    account_user_name = session.get('username')
+
+    # get thumbnail url of this user account in aws s3
+    s3 = boto3.client('s3')
+    url_thumbnail_account = s3.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': 'imagesece1779', 'Key': str(account_user_name) + '/' + 'thumbnail'})
+
+    table = dynamodb.Table('a3_ece1779')
+    response = table.get_item(
+        Key={
+            'username': account_user_name
+        }
+    )
+
+    data = {}
+    following_users = []
+
+    if 'Item' in response:
+        item = response['Item']
+        data.update(item)
+
+    if 'following' in data:
+        following_name = data['following']
+
+        for name in following_name:
+            table = dynamodb.Table('a3_ece1779')
+            response = table.get_item(
+                Key={
+                    'username': name
+                }
+            )
+            data_name = {}
+
+            if 'Item' in response:
+                item = response['Item']
+                data_name.update(item)
+
+            if 'thumbnail' in data_name:
+
+                # get thumbnail url of a specific user
+                s3 = boto3.client('s3')
+                # get the thumbnail
+                file_key_name = str(name) + '/' + 'thumbnail'
+                url_thumb = s3.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+                )
+            else:
+                url_thumb = "https://images.unsplash.com/photo-1513721032312-6a18a42c8763?w=152&h=152&fit=crop&crop=faces"
+
+            following_users.append([name, url_thumb])
+
+    return render_template("users/following_list.html", following_users=following_users,
+                           data=data, url_thumbnail_account=url_thumbnail_account)
 
