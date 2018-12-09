@@ -397,7 +397,7 @@ Remove or comment-out the code block below to see how the browser will fall-back
 				<h1 class="profile-user-name">{{data['username']}}</h1>
 
 				<a class="btn profile-edit-btn" href="{{url_for('edit_profile')}}">Edit Profile</a>
-                <a class="btn profile-edit-btn" href="{{url_for('edit_thumbnail')}}">Edit Thumbnail</a>
+                <a class="btn profile-edit-btn" href="{{url_for('edit_thumbnail')}}">Edit Profile Picture</a>
                 <a class="btn profile-edit-btn" href="{{url_for('main')}}">Logout</a>
 
 				<button class="btn profile-settings-btn" aria-label="profile settings"><i class="fas fa-cog" aria-hidden="true"></i></button>
@@ -417,40 +417,47 @@ Remove or comment-out the code block below to see how the browser will fall-back
                 {% if not data['account_name'] and not data['personal_profile'] %}
 				<p>
                     <span class="profile-real-name">📷️</span> New User
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
                 </p>
                 <p>
-                    <a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+                    <a class="profile-real-name" href="{{url_for('world_moments')}}">️🌍World MOMENTS</a>
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
                     &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
-                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
                 </p>
 
                 {% elif data['account_name'] and not data['personal_profile'] %}
                 <p>
                     <span class="profile-real-name">📷️{{data['account_name']}}</span> New User
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
                 </p>
-                    <p><a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+                    <p>
+                        <a class="profile-real-name" href="{{url_for('world_moments')}}">️🌍World MOMENTS</a>
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
                 &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
-                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️️FOLLOWING</a>
+
                 </p>
 
                 {% elif not data['account_name'] and data['personal_profile'] %}
                 <p>
                     <span class="profile-real-name">📷️</span> {{data['personal_profile']}}
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
                 </p>
                 <p>
-                    <a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
+                    <a class="profile-real-name" href="{{url_for('world_moments')}}">️🌍World MOMENTS</a>
+                    &nbsp &nbsp<a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
                     &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
-                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️️FOLLOWING</a>
                 </p>
 
                 {% else %}
                <p>
                    <span class="profile-real-name">📷️{{data['account_name']}}:</span> {{data['personal_profile']}}
+                   &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
                </p>
                <p>
+                   <a class="profile-real-name" href="{{url_for('world_moments')}}">️🌍World MOMENTS</a>
+                    &nbsp &nbsp
                    <a class="profile-real-name" href="{{url_for('friends_moments')}}">👫️Friends MOMENTS</a>
                &nbsp &nbsp<a class="profile-real-name" href="{{url_for('my_moments')}}">👼️My MOMENTS</a>
-                   &nbsp &nbsp<a class="profile-real-name" href="{{url_for('following_list')}}">❤️FOLLOWING</a>
 
                </p>
 

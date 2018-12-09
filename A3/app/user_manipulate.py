@@ -518,6 +518,83 @@ def friends_moments():
     return render_template("users/friends_moments.html", posts_sorted=posts_sorted)
 
 
+@webapp.route('/world_moments', methods=["GET", "POST"])
+# display all posts of the user
+def world_moments():
+
+    # get information of the aws db
+    table = dynamodb.Table('a3_ece1779')
+    response = table.scan()
+
+    records = []
+    usernames = []
+
+    for i in response['Items']:
+        records.append(i)
+
+    # get all usernames in the db
+    for user in records:
+        usernames.append(user['username'])
+
+    posts_users = []
+
+    # get information of the all users
+    for name in usernames:
+        # get information of this account in the aws db
+        table = dynamodb.Table('a3_ece1779')
+        response = table.get_item(
+            Key={
+                'username': name
+            }
+        )
+
+        user_data = {}
+        url_thumb = []
+
+        if 'Item' in response:
+            item = response['Item']
+            user_data.update(item)
+
+        if 'thumbnail' in user_data:
+            # get thumbnail url of a specific user
+            s3 = boto3.client('s3')
+            file_key_name = str(name) + '/' + 'thumbnail'
+            url_thumb = s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': 'imagesece1779', 'Key': file_key_name}
+            )
+
+        if 'post_content' in user_data:
+            for post in user_data['post_content']:
+
+                post_info = post[post.rfind(':', 1) + 1:post.rfind('&', 1)]
+                post_time = post[0:post.rfind(',', 1)]
+                post_name = post[(post.rfind(',', 1) + 1): post.rfind('.', 1)]
+                post_type = post[(post.rfind('.', 1) + 1): post.rfind(':', 1)]
+                post_who_can_see = post[post.rfind('&', 1) + 1:]
+
+                if post_who_can_see == 'onlyme':
+                    continue
+
+                else:
+                    # get the url of all posts of this following user
+                    s3 = boto3.client('s3')
+                    url_post = s3.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': 'imagesece1779', 'Key': str(name) + '/' + post_name}
+                    )
+
+                    posts_users.append([post_time, name, post_info, post_name, post_type, url_post, url_thumb])
+
+    posts_sorted = sorted(posts_users, key=itemgetter(0), reverse=True)
+
+    return render_template("users/world_moments.html", posts_sorted=posts_sorted)
+
+
+
+
+
+
 @webapp.route('/posts_of_specific_user', methods=['POST'])
 # query a specific user and see their posts
 def posts_of_specific_user():
